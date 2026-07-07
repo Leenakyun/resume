@@ -1,11 +1,9 @@
-// admin.js
 import { 
     auth, db, storage,
     signInWithEmailAndPassword, signOut, onAuthStateChanged,
-    doc, getDoc, setDoc, updateDoc 
+    doc, getDoc, setDoc
 } from "./firebase.js";
 
-// Firebase Storage 모듈 추가 로드 (CDN 방식)
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // DOM 요소 선택
@@ -14,7 +12,7 @@ const adminDashboard = document.getElementById("admin-dashboard");
 const loginForm = document.getElementById("login-form");
 const btnLogout = document.getElementById("btn-logout");
 
-const profileForm = document.getElementById("profile-form");
+const portfolioMainForm = document.getElementById("portfolio-main-form");
 const profName = document.getElementById("prof-name");
 const profJob = document.getElementById("prof-job");
 const profImage = document.getElementById("prof-image");
@@ -24,8 +22,19 @@ const prevName = document.getElementById("prev-name");
 const prevJob = document.getElementById("prev-job");
 const prevIntro = document.getElementById("prev-intro");
 const prevImg = document.getElementById("prev-img");
+const prevCareer = document.getElementById("prev-career");
+const prevProjects = document.getElementById("prev-projects");
 
-// --- STEP 7: Quill 에디터 초기화 ---
+const careerListContainer = document.getElementById("career-list");
+const btnAddCareer = document.getElementById("btn-add-career");
+const projectListContainer = document.getElementById("project-list");
+const btnAddProject = document.getElementById("btn-add-project");
+
+// 로컬 상태 배열 데이터
+let careerData = [];
+let projectData = [];
+
+// --- Quill 에디터 초기화 ---
 const quill = new Quill('#editor-container', {
     theme: 'snow',
     modules: {
@@ -38,19 +47,19 @@ const quill = new Quill('#editor-container', {
     }
 });
 
-// 1. 인증 상태 감시
+// --- 인증 상태 체킹 ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         loginSection.classList.add("hidden");
         adminDashboard.classList.remove("hidden");
-        loadExistingProfileData(); 
+        loadAllPortfolioData(); 
     } else {
         loginSection.classList.remove("hidden");
         adminDashboard.classList.add("hidden");
     }
 });
 
-// 2. 로그인 처리
+// 로그인 및 로그아웃 핸들러
 loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("login-email").value;
@@ -59,30 +68,45 @@ loginForm.addEventListener("submit", async (e) => {
         await signInWithEmailAndPassword(auth, email, password);
         alert("로그인에 성공했습니다.");
     } catch (error) {
-        alert("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
+        alert("로그인 실패: 정보를 확인하세요.");
     }
 });
 
-// 3. 로그아웃 처리
 btnLogout.addEventListener("click", async () => {
     try { await signOut(auth); alert("로그아웃 되었습니다."); } catch (error) { console.error(error); }
 });
 
-
-// --- STEP 10: 실시간 미리보기 기능 고도화 ---
+// --- 실시간 미리보기 연동 리팩토링 (STEP 10) ---
 function updatePreview() {
     prevName.textContent = profName.value || "이름 미설정";
     prevJob.textContent = profJob.value || "";
+    
+    // 경력 프리뷰 렌더링
+    prevCareer.innerHTML = careerData.map(item => `
+        <div class="preview-item">
+            <div class="preview-item-header">
+                <span>${item.company || '회사명 미입력'}</span>
+                <span style="font-size:0.9rem; color:#666;">${item.period || ''}</span>
+            </div>
+            <div style="font-size:0.95rem; color:var(--secondary-sky);">${item.role || ''}</div>
+        </div>
+    `).join('');
+
+    // 프로젝트 프리뷰 렌더링
+    prevProjects.innerHTML = projectData.map(item => `
+        <div class="preview-item" style="margin-bottom: 1rem;">
+            <div style="font-weight:bold; color:var(--primary-navy);">${item.title || '프로젝트명 미입력'}</div>
+            <div style="font-size:0.9rem; white-space:pre-wrap; color:#475569; margin:0.25rem 0;">${item.description || ''}</div>
+            ${item.github ? `<a href="${item.github}" target="_blank" style="font-size:0.85rem; color:var(--secondary-sky); text-decoration:none;">GitHub Link ↗</a>` : ''}
+        </div>
+    `).join('');
 }
+
 profName.addEventListener("input", updatePreview);
 profJob.addEventListener("input", updatePreview);
+quill.on('text-change', () => { prevIntro.innerHTML = quill.root.innerHTML; });
 
-// Quill 에디터 텍스트 변경 시 실시간 프리뷰 연동
-quill.on('text-change', () => {
-    prevIntro.innerHTML = quill.root.innerHTML; // 에디터 안의 HTML을 그대로 프리뷰에 주입
-});
-
-// 로컬 이미지 선택 시 화면에 미리 띄워주기 (로컬 프리뷰)
+// 이미지 선택 시 로컬 프리뷰
 profImage.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -97,72 +121,151 @@ profImage.addEventListener("change", (e) => {
     }
 });
 
+// --- 동적 CRUD 렌더링 엔진 (STEP 9) ---
 
-// 4. Firestore에서 기존 데이터 가져와 폼과 에디터에 채우기
-async function loadExistingProfileData() {
+// 1. 경력 폼 렌der
+function renderCareerList() {
+    careerListContainer.innerHTML = "";
+    careerData.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "crud-item";
+        div.innerHTML = `
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <input type="text" placeholder="회사명/조직명" value="${item.company || ''}" oninput="updateCareerItem(${index}, 'company', this.value)">
+            </div>
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <input type="text" placeholder="역할 및 직무" value="${item.role || ''}" oninput="updateCareerItem(${index}, 'role', this.value)">
+            </div>
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <input type="text" placeholder="기간 (예: 2024.01 ~ 2026.05)" value="${item.period || ''}" oninput="updateCareerItem(${index}, 'period', this.value)">
+            </div>
+            <button type="button" class="btn-delete" onclick="deleteCareerItem(${index})">삭제</button>
+        `;
+        careerListContainer.appendChild(div);
+    });
+    updatePreview();
+}
+
+window.updateCareerItem = (index, field, value) => {
+    careerData[index][field] = value;
+    updatePreview();
+};
+
+window.deleteCareerItem = (index) => {
+    careerData.splice(index, 1);
+    renderCareerList();
+};
+
+btnAddCareer.addEventListener("click", () => {
+    careerData.push({ company: "", role: "", period: "" });
+    renderCareerList();
+});
+
+// 2. 프로젝트 폼 렌der
+function renderProjectList() {
+    projectListContainer.innerHTML = "";
+    projectData.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "crud-item";
+        div.innerHTML = `
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <input type="text" placeholder="프로젝트명" value="${item.title || ''}" oninput="updateProjectItem(${index}, 'title', this.value)" style="font-weight:bold;">
+            </div>
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <textarea placeholder="프로젝트 설명 및 QA 성과" oninput="updateProjectItem(${index}, 'description', this.value)">${item.description || ''}</textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:0.5rem;">
+                <input type="text" placeholder="GitHub 링크" value="${item.github || ''}" oninput="updateProjectItem(${index}, 'github', this.value)">
+            </div>
+            <button type="button" class="btn-delete" onclick="deleteProjectItem(${index})">삭제</button>
+        `;
+        projectListContainer.appendChild(div);
+    });
+    updatePreview();
+}
+
+window.updateProjectItem = (index, field, value) => {
+    projectData[index][field] = value;
+    updatePreview();
+};
+
+window.deleteProjectItem = (index) => {
+    projectData.splice(index, 1);
+    renderProjectList();
+};
+
+btnAddProject.addEventListener("click", () => {
+    projectData.push({ title: "", description: "", github: "" });
+    renderProjectList();
+});
+
+// --- 데이터 로드 및 초기화 통합 ---
+async function loadAllPortfolioData() {
     try {
-        const docRef = doc(db, "portfolio", "profile");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
+        // 프로필 텍스트 및 이미지 로드
+        const profileSnap = await getDoc(doc(db, "portfolio", "profile"));
+        if (profileSnap.exists()) {
+            const data = profileSnap.data();
             profName.value = data.name || "";
             profJob.value = data.job || "";
-            
-            // Quill 에디터에 기존 HTML 내용 채우기
-            if (data.intro) {
-                quill.root.innerHTML = data.intro;
-                prevIntro.innerHTML = data.intro;
-            }
-            
-            // 기존 프로필 이미지 경로가 있다면 프리뷰에 노출
+            if (data.intro) { quill.root.innerHTML = data.intro; prevIntro.innerHTML = data.intro; }
             if (data.image) {
-                prevImg.src = data.image;
-                prevImg.style.display = "block";
-                uploadThumb.src = data.image;
-                uploadThumb.style.display = "inline-block";
+                prevImg.src = data.image; prevImg.style.display = "block";
+                uploadThumb.src = data.image; uploadThumb.style.display = "inline-block";
             }
-            updatePreview();
         }
+        
+        // 경력 로드
+        const careerSnap = await getDoc(doc(db, "portfolio", "career"));
+        if (careerSnap.exists()) { careerData = careerSnap.data().list || []; }
+        
+        // 프로젝트 로드
+        const projectSnap = await getDoc(doc(db, "portfolio", "projects"));
+        if (projectSnap.exists()) { projectData = projectSnap.data().list || []; }
+
+        renderCareerList();
+        renderProjectList();
+        updatePreview();
     } catch (error) {
-        console.error("Error loading profile:", error);
+        console.error("데이터 로딩 실패:", error);
     }
 }
 
-
-// --- STEP 8: 이미지 업로드 및 Firestore 최종 데이터 저장 ---
-profileForm.addEventListener("submit", async (e) => {
+// --- 전체 동시 저장 로직 (STEP 8 & 9) ---
+portfolioMainForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    let imageUrl = prevImg.src; // 기본값은 기존 이미지 URL 유지
+    let imageUrl = prevImg.src; 
     const file = profImage.files[0];
 
     try {
-        // 1. 새로운 사진 파일이 선택되었다면 Storage에 업로드 진행
+        // 1. 신규 사진 파일 처리
         if (file) {
-            // 파일명을 고유하게 만들기 위해 타임스탬프 결합 (예: profile/profile_17181923.jpg)
             const fileExtension = file.name.split('.').pop();
             const storageRef = ref(storage, `profile/profile_${Date.now()}.${fileExtension}`);
-            
-            // 파일 업로드 대기
             const snapshot = await uploadBytes(storageRef, file);
-            // 업로드 완료된 파일의 공개 다운로드 URL 추출
             imageUrl = await getDownloadURL(snapshot.ref);
         }
 
-        // 2. Firestore에 최종 텍스트 데이터 및 이미지 URL 저장
-        const docRef = doc(db, "portfolio", "profile");
-        await setDoc(docRef, {
+        // 2. Firestore 프로필 저장
+        await setDoc(doc(db, "portfolio", "profile"), {
             name: profName.value,
             job: profJob.value,
-            intro: quill.root.innerHTML, // Quill 에디터의 Rich HTML 저장
-            image: imageUrl,             // Firebase Storage 이미지 주소 저장
+            intro: quill.root.innerHTML,
+            image: imageUrl,
             updatedAt: new Date().toISOString()
         }, { merge: true });
+
+        // 3. Firestore 경력 배열 저장
+        await setDoc(doc(db, "portfolio", "career"), { list: careerData });
+
+        // 4. Firestore 프로젝트 배열 저장
+        await setDoc(doc(db, "portfolio", "projects"), { list: projectData });
         
-        alert("프로필 정보와 이미지가 성공적으로 저장되었습니다!");
+        alert("모든 변경사항이 성공적으로 통합 저장되었습니다!");
+        loadAllPortfolioData(); // 싱크 맞추기 위해 재로드
     } catch (error) {
-        console.error("저장 중 오류 발생:", error);
+        console.error("저장 오류:", error);
         alert("저장 중 오류가 발생했습니다.");
     }
 });
