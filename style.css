@@ -1,0 +1,444 @@
+/* ==========================
+   기본 설정
+========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:'Pretendard',sans-serif;
+    background:#eef3f9;
+    color:#333;
+    transition:0.3s;
+}
+
+
+/* ==========================
+   전체 레이아웃
+========================== */
+
+.container{
+
+    width:95%;
+    max-width:1300px;
+
+    margin:20px auto;
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+
+/* ==========================
+   프로필 카드
+========================== */
+
+.profile-card{
+
+    grid-column:1 / 3;
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:25px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:30px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.1);
+
+}
+
+
+
+.profile-img{
+
+    width:170px;
+
+    height:170px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:6px solid #0A66C2;
+
+}
+
+
+
+.profile-text h1{
+
+    font-size:36px;
+
+    color:#0A66C2;
+
+}
+
+
+
+.profile-text h2{
+
+    margin-top:10px;
+
+    font-size:22px;
+
+    color:#555;
+
+}
+
+
+
+.profile-text p{
+
+    margin-top:15px;
+
+    line-height:1.7;
+
+}
+
+
+
+/* ==========================
+   공통 카드
+========================== */
+
+.card{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:25px;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+
+
+.card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 12px 25px rgba(0,0,0,.15);
+
+}
+
+
+
+.card h2{
+
+    color:#0A66C2;
+
+    margin-bottom:20px;
+
+    border-left:6px solid #0A66C2;
+
+    padding-left:10px;
+
+}
+
+
+
+/* ==========================
+   내용
+========================== */
+
+.card div{
+
+    line-height:1.8;
+
+    font-size:16px;
+
+}
+
+
+
+/* ==========================
+   경력 타임라인
+========================== */
+
+.timeline{
+
+    border-left:4px solid #0A66C2;
+
+    margin-left:10px;
+
+    padding-left:20px;
+
+}
+
+
+
+.timeline-item{
+
+    margin-bottom:20px;
+
+    position:relative;
+
+}
+
+
+
+.timeline-item::before{
+
+    content:"";
+
+    width:14px;
+
+    height:14px;
+
+    background:#0A66C2;
+
+    border-radius:50%;
+
+    position:absolute;
+
+    left:-28px;
+
+    top:5px;
+
+}
+
+
+
+.timeline h3{
+
+    color:#0A66C2;
+
+    margin-bottom:5px;
+
+}
+
+
+
+/* ==========================
+   Skill Badge
+========================== */
+
+.skill-list{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+}
+
+
+
+.skill{
+
+    background:#0A66C2;
+
+    color:white;
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    font-size:14px;
+
+}
+
+
+
+/* ==========================
+   Portfolio
+========================== */
+
+input[type=file]{
+
+    margin-top:10px;
+
+    margin-bottom:15px;
+
+}
+
+
+
+#portfolioList{
+
+    list-style:none;
+
+}
+
+
+
+#portfolioList li{
+
+    padding:10px;
+
+    background:#f4f6f9;
+
+    border-radius:10px;
+
+    margin-bottom:8px;
+
+}
+
+
+
+/* ==========================
+   버튼
+========================== */
+
+button{
+
+    margin-top:20px;
+
+    background:#0A66C2;
+
+    color:white;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:12px 20px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+
+button:hover{
+
+    background:#004fa3;
+
+}
+
+
+
+/* ==========================
+   링크
+========================== */
+
+a{
+
+    text-decoration:none;
+
+    color:#0A66C2;
+
+}
+
+
+
+/* ==========================
+   다크모드
+========================== */
+
+.dark{
+
+    background:#181818;
+
+    color:white;
+
+}
+
+
+
+.dark .card{
+
+    background:#242424;
+
+}
+
+
+
+.dark .profile-card{
+
+    background:#242424;
+
+}
+
+
+
+.dark .skill{
+
+    background:#1c7ed6;
+
+}
+
+
+
+/* ==========================
+   애니메이션
+========================== */
+
+.card{
+
+    animation:fadeIn .7s ease;
+
+}
+
+
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+
+/* ==========================
+   반응형
+========================== */
+
+@media(max-width:900px){
+
+.container{
+
+    grid-template-columns:1fr;
+
+}
+
+.profile-card{
+
+    flex-direction:column;
+
+    text-align:center;
+
+}
+
+.profile-card{
+
+    grid-column:1;
+
+}
+
+}
