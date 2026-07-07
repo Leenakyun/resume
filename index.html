@@ -1,143 +1,71 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>이나경 Portfolio</title>
-
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <link rel="stylesheet" href="style.css">
-
-    <script defer src="script.js"></script>
-
 </head>
-
 <body>
 
 <div class="container">
 
-    <!-- 프로필 -->
-
     <header class="profile-card">
-
         <img src="images/profile.jpg"
              alt="프로필 사진"
+             id="main-prof-img"
              class="profile-img">
 
         <div class="profile-text">
-
-            <h1>이나경</h1>
-
-            <h2>AI Data QA Specialist</h2>
-
+            <h1 id="main-prof-name">이나경</h1>
+            <h2 id="main-prof-job">AI Data QA Specialist</h2>
             <p>
                 AI 데이터 QA · 데이터 어노테이션
             </p>
-
             <button id="darkModeBtn">
                 🌙 Dark Mode
             </button>
-
         </div>
-
     </header>
 
-
-    <!-- 자기소개 -->
-
     <section class="card">
-
         <h2>🙋 자기소개</h2>
-
-        <div id="intro"></div>
-
-    </section>
-
-
-
-    <!-- 경력 -->
-
-    <section class="card">
-
-        <h2>💼 경력</h2>
-
-        <div id="career"></div>
-
-    </section>
-
-
-
-
-    <!-- 학력 -->
-
-    <section class="card">
-
-        <h2>🎓 학력</h2>
-
-        <div id="education"></div>
-
-    </section>
-
-
-
-    <!-- 자격증 -->
-
-    <section class="card">
-
-        <h2>🏆 자격증</h2>
-
-        <div id="license"></div>
-
-    </section>
-
-
-
-
-    <!-- 기술 -->
-
-    <section class="card">
-
-        <h2>💻 기술</h2>
-
-        <div id="skills"
-             class="skill-list">
-
+        <div id="intro">
+            포트폴리오 데이터를 불러오는 중입니다...
         </div>
-
     </section>
-
-
-
-
-
-    <!-- Portfolio -->
 
     <section class="card">
-
-        <h2>📁 Portfolio</h2>
-
-        <p>
-            프로젝트 자료를 업로드하세요.
-        </p>
-
-        <input type="file"
-               id="portfolioUpload"
-               multiple>
-
-        <ul id="portfolioList"></ul>
-
+        <h2>💼 경력</h2>
+        <div id="career" class="timeline"></div>
     </section>
 
+    <section class="card">
+        <h2>🎓 학력</h2>
+        <div id="education"></div>
+    </section>
 
+    <section class="card">
+        <h2>🏆 자격증</h2>
+        <div id="license"></div>
+    </section>
 
+    <section class="card">
+        <h2>💻 기술</h2>
+        <div id="skills" class="skill-list"></div>
+    </section>
 
+    <section class="card">
+        <h2>📁 Portfolio</h2>
+        <p>
+            관리자 대시보드에서 등록한 프로젝트 리스트가 아래에 표시됩니다.
+        </p>
+        <div id="main-project-grid" class="project-grid"></div>
+    </section>
 
 </div>
 
+<script type="module" src="script.js"></script>
 </body>
-
 </html>
