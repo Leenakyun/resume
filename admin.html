@@ -1,0 +1,151 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio CMS - 관리자 페이지</title>
+    <!-- Pretendard 폰트 불러오기 -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #333333;
+            --primary-navy: #1e293b;
+            --secondary-sky: #0ea5e9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .hidden { display: none !important; }
+
+        /* 로그인 섹션 */
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+        .login-card h2 { color: var(--primary-navy); margin-top: 0; margin-bottom: 1.5rem; text-align: center;}
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            border-radius: 6px; box-sizing: border-box; font-size: 1rem;
+        }
+        .btn-login {
+            width: 100%; padding: 0.75rem; background-color: var(--primary-navy);
+            color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-login:hover { background-color: var(--secondary-sky); }
+
+        /* 대시보드 섹션 */
+        #admin-dashboard { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .btn-logout {
+            padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--primary-navy);
+            color: var(--primary-navy); border-radius: 6px; cursor: pointer;
+        }
+        .btn-logout:hover { background: #fee2e2; color: #ef4444; border-color: #ef4444; }
+
+        /* 메인 레이아웃: 9번 항목 실시간 미리보기 대비 Left-Right 배치 */
+        .cms-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .panel-card {
+            background: var(--card-bg); padding: 2rem; border-radius: 12px;
+            border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .panel-card h3 { color: var(--primary-navy); margin-top: 0; border-bottom: 2px solid var(--bg-color); padding-bottom: 0.5rem;}
+        
+        .preview-box {
+            background: #ffffff; border: 1px dashed var(--secondary-sky);
+            border-radius: 8px; padding: 1rem; min-height: 400px;
+        }
+        .btn-save {
+            background-color: var(--secondary-sky); color: white; border: none;
+            padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 로그인 화면 -->
+    <section id="login-section">
+        <div class="login-card">
+            <h2>CMS Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-login">로그인</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 2. 관리자 대시보드 (로그인 성공 시 노출) -->
+    <section id="admin-dashboard" class="hidden">
+        <div class="header">
+            <h2>AI Data QA Portfolio CMS</h2>
+            <button id="btn-logout" class="btn-logout">로그아웃</button>
+        </div>
+
+        <div class="cms-container">
+            <!-- 왼쪽: 관리창 (STEP 6~9 진행 예정) -->
+            <div class="panel-card" id="edit-panel">
+                <h3>프로필 수정</h3>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="prof-name">이름</label>
+                        <input type="text" id="prof-name" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="prof-job">직무</label>
+                        <input type="text" id="prof-job" value="AI Data QA Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label for="prof-intro">자기소개 (우선 textarea로 구현)</label>
+                        <textarea id="prof-intro" style="width:100%; min-height:100px; border: 1px solid var(--border-color); border-radius:6px; padding:0.5rem; font-family:inherit;"></textarea>
+                    </div>
+                    <button type="submit" class="btn-save">Firestore에 저장</button>
+                </form>
+            </div>
+
+            <!-- 오른쪽: 실시간 Preview 영역 (STEP 10) -->
+            <div class="panel-card" id="preview-panel">
+                <h3>실시간 Preview</h3>
+                <div class="preview-box" id="live-preview">
+                    <!-- 입력에 따라 실시간 렌더링될 영역 -->
+                    <h1 id="prev-name" style="color: var(--primary-navy);">이름 미설정</h1>
+                    <p id="prev-job" style="color: var(--secondary-sky); font-weight: bold;"></p>
+                    <div id="prev-intro" style="white-space: pre-wrap; line-height: 1.6;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 모듈 스크립트로 admin.js 로드 -->
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
